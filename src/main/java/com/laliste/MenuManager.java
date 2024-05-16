@@ -2,27 +2,19 @@ package com.laliste;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.util.Duration;
+import javafx.stage.Stage;
+
+import com.laliste.viewElements.*;
 
 public class MenuManager extends MenuBar{
     
-    public MenuManager(Text msg_footer){
+    public MenuManager(Text info_msg, Stage stagePrincipal){
 
         SeparatorMenuItem separator = new SeparatorMenuItem();
 
@@ -40,22 +32,37 @@ public class MenuManager extends MenuBar{
 
         itemGenererTxt.setOnAction(e->{
             String msg = DatabaseManager.generateTxtFile();
-            msg_footer.setText(msg);
-            msg_footer.setStyle("-fx-text-fill: rgb(104, 214, 99);");
-            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), ev -> msg_footer.setText("")));
+            info_msg.setText(msg);
+            info_msg.setStyle("-fx-fill: rgb(104, 214, 99);");
+            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), ev -> info_msg.setText("")));
             timeline.play();
         });
 
         itemImportFromTxt.setOnAction(e->{
             String msg = DatabaseManager.importFromTxt();
-            msg_footer.setText(msg);
-            msg_footer.setStyle("-fx-text-fill: rgb(104, 214, 99);");
-            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), ev -> msg_footer.setText("")));
+            info_msg.setText(msg);
+            info_msg.setStyle("-fx-fill: rgb(104, 214, 99);");
+            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), ev -> info_msg.setText("")));
             timeline.play();
         });
         
         itemClearTable.setOnAction(e->{
-            clearTableAlert();
+            DialogClearConfirmation dialog = new DialogClearConfirmation(stagePrincipal);
+            dialog.showAndWait();
+            String result = dialog.getResult();
+
+            if(result != null && result.equals("ok")){
+                DatabaseManager.clearTableLiens();
+                info_msg.setText("Table vidée.");
+                info_msg.setStyle("-fx-fill: rgb(104, 214, 99);");
+                Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), ev -> info_msg.setText("")));
+                timeline.play();
+            }else{
+                info_msg.setText("Action annulée.");
+                info_msg.setStyle("-fx-fill: rgb(255, 0, 0);");
+                Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), ev -> info_msg.setText("")));
+                timeline.play();
+            }
         });
 
         menuFichier.getItems().addAll(itemGenererTxt, itemImportFromTxt, separator, itemQuitter);
@@ -64,56 +71,4 @@ public class MenuManager extends MenuBar{
         this.getMenus().addAll(menuFichier, menuEdition);
     }
 
-    private void clearTableAlert(){
-        Label confirmationText = new Label("Veuillez entrer \"Je confirme\" :");
-        TextField confirmationTextField = new TextField();
-        Button okButton = new Button("Confirmer");
-        Button cancelButton = new Button("Annuler");
-        ButtonType cancelButtonType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
-        Text confirmationErrText = new Text("");
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20));
-
-        grid.add(confirmationText, 0, 0);
-        grid.add(confirmationTextField, 1, 0);
-        // grid.add(cancelButton, 0, 1);
-        grid.add(okButton, 1, 1);
-        grid.add(confirmationErrText, 0, 2, 2, 1);
-
-        // Définir les contraintes de la grille pour le champ de texte afin qu'il s'étende horizontalement
-        GridPane.setHgrow(confirmationTextField, Priority.ALWAYS);
-
-        // Création de la boîte de dialogue personnalisée
-        Alert confirmationDialog = new Alert(Alert.AlertType.NONE);
-        confirmationDialog.setTitle("Confirmation");
-        confirmationDialog.getDialogPane().setContent(grid);
-        confirmationDialog.getButtonTypes().setAll(cancelButtonType);
-
-        // Définir le comportement du bouton OK
-        okButton.setOnAction(e -> {
-            String text = confirmationTextField.getText();
-            System.out.println("Texte entré: " + text);
-            if (text.equals("Je confirme")) {
-                DatabaseManager.clearTableLiens();
-                System.out.println("Confirmation réussie. Table vidée.");
-                confirmationDialog.close();
-
-            } else {
-                confirmationErrText.setText("Le texte entré n'est pas valide.");
-            }
-        });
-        
-
-        // Définir le comportement du bouton Annuler
-        cancelButton.setOnAction(e -> {
-            confirmationDialog.getDialogPane().getScene().getWindow().hide();
-        });
-
-        // Afficher la boîte de dialogue
-        confirmationDialog.showAndWait();
-    
-    }
 }

@@ -35,11 +35,12 @@ public class App extends Application {
     @Override
     public void start(Stage stagePrincipal) throws IOException {
 
-        Label mainMessage = new Label("Bienvenue sur l'application !");
-        Text footer_msg = new Text("");
+        Text mainMessage = new Text("Bienvenue sur l'application !");
+        mainMessage.setStyle("-fx-font-size: 20px;");
+        Text footer_info = new Text("");
         TextField textField_randLink = new RandLinkTextField("",300);
         TextField searchField = new SearchTextField("","Entrez le lien ...", 300);
-        Button buttonSoumet = new ButtonAddLink(footer_msg, searchField);
+        Button buttonSoumet = new ButtonAddLink(mainMessage, searchField);
         Button buttonRand = new Button("Generer un lien aleatoire");
 
         searchField.setOnAction(e->{//ajouter un lien en appuyant sur la touche entrée
@@ -87,12 +88,12 @@ public class App extends Application {
         mainPane.setSpacing(10);
         mainPane.getChildren().addAll(searchField, buttonSoumet, buttonRand, textField_randLink);
 
-        rootPane.setTop(new MenuManager(footer_msg));
+        rootPane.setTop(new MenuManager(mainMessage, stagePrincipal));
         rootPane.setCenter(mainPane);
         rootPane.setBottom(footer);
 
-        footer_msg.setTranslateX(10);
-        footer.getChildren().add(footer_msg);
+        footer_info.setTranslateX(10);
+        footer.getChildren().add(footer_info);
 
         Scene mainScene = new Scene(rootPane, 640, 480);
 
